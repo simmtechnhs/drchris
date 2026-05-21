@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publications — DrChris</title>
+<link rel="stylesheet" href="styles.css">
+<style>body { padding-top: 70px; }</style>
+<style>
+.pub-live-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+}
+.pub-live-header h2 {
+  font-family: 'Instrument Serif', serif; font-size: 1.8rem; font-weight: 400;
+}
+.pub-live-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: #e8f0e8; color: #2d7a2d;
+  padding: 0.35rem 0.85rem; border-radius: 100px;
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.pub-live-badge .pulse {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #2d7a2d; animation: livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.pub-live-badge.loading { background: #fef3e2; color: #b8860b; }
+.pub-live-badge.loading .pulse { background: #b8860b; }
+.pub-live-badge.error { background: #fef2f0; color: #8a3a2a; }
+.pub-live-badge.error .pulse { background: #8a3a2a; animation: none; }
+
+.pub-live-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+
+.pub-live-card {
+  background: var(--card-bg); border: 1px solid var(--rule);
+  border-radius: 12px; padding: 1.4rem;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  display: flex; flex-direction: column;
+}
+.pub-live-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+  border-color: var(--accent);
+}
+.pub-live-card .plc-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1rem; line-height: 1.4; margin-bottom: 0.5rem; flex-grow: 1;
+}
+.pub-live-card .plc-title a {
+  color: var(--ink); text-decoration: none; transition: color 0.2s;
+}
+.pub-live-card .plc-title a:hover { color: var(--accent); }
+.pub-live-card .plc-authors {
+  font-size: 0.78rem; color: var(--muted); margin-bottom: 0.35rem;
+}
+.pub-live-card .plc-journal {
+  font-size: 0.75rem; color: #666; font-style: italic; margin-bottom: 0.3rem;
+}
+.pub-live-card .plc-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; color: var(--muted);
+}
+.pub-live-card .plc-new {
+  display: inline-block; background: var(--accent); color: #fff;
+  font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; padding: 0.15rem 0.5rem; border-radius: 3px;
+  margin-bottom: 0.6rem; width: fit-content;
+}
+
+.pub-live-empty {
+  text-align: center; padding: 2rem;
+  color: var(--muted); font-size: 0.88rem;
+  background: var(--section-alt); border-radius: 12px;
+}
+
+.pub-live-loading {
+  text-align: center; padding: 2.5rem;
+  color: var(--muted); font-size: 0.88rem;
+}
+.pub-live-loading .mini-spinner {
+  width: 24px; height: 24px; border: 2px solid var(--rule);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 0.8rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.divider {
+  border: none; border-top: 1px solid var(--rule);
+  margin: 3rem 0;
+}
+
+.static-header {
+  display: flex; align-items: baseline; gap: 1rem; margin-bottom: 2rem;
+}
+.static-header h2 {
+  font-family: 'Instrument Serif', serif; font-size: 1.8rem; font-weight: 400;
+}
+.static-header .static-note {
+  font-size: 0.78rem; color: var(--muted);
+}
+</style>
+</head>
+<body>
+
+<nav id="navbar" class="nav-light">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-name">Dr<span>Chris</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="research.html">Research</a></li>
+      <li><a href="publications.html" class="active">Publications</a></li>
+      <li><a href="education.html">Education</a></li>
+      <li><a href="news.html">News</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-header">
+  <span class="section-number">03</span>
+  <h1>Publications</h1>
+  <p>Peer-reviewed publications across AI, immersive technology, and medical education</p>
+</div>
+
+<!-- LIVE PUBMED SECTION -->
+<section>
+  <div class="section-inner">
+    <div class="pub-live-header">
+      <h2>Latest from PubMed</h2>
+      <span class="pub-live-badge loading" id="liveBadge">
+        <span class="pulse"></span>
+        <span id="liveBadgeText">Loading...</span>
+      </span>
+    </div>
+
+    <div id="liveContainer">
+      <div class="pub-live-loading">
+        <div class="mini-spinner"></div>
+        Searching PubMed for recent publications...
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- STATIC CURATED LIST -->
+    <div class="static-header">
+      <h2>Selected Publications</h2>
+      <span class="static-note">Curated list</span>
+    </div>
+
+    <ul class="pub-list">
+      <li class="pub-item">
+        <span class="pub-year">2026</span>
+        <div>
+          <div class="pub-title">Scaling Multimodal Agentic AI in Medical Education: Multisite Cross-Sectional Study of Simulation Effectiveness in Primary Care</div>
+          <div class="pub-meta">Jacobs C, Johnson H, Brownlie K, Joiner R, Thompson T</div>
+        </div>
+        <span class="pub-journal">JMIR Form Res</span>
+      </li>
+      <li class="pub-item">
+        <span class="pub-year">2026</span>
+        <div>
+          <div class="pub-title">Medical Students' Experiences With Virtual Reality Simulation Training: Qualitative Study</div>
+          <div class="pub-meta">Sharma V, Park S, Voinescu A, Jacobs C</div>
+        </div>
+        <span class="pub-journal">JMIR Med Educ</span>
+      </li>
+      <li class="pub-item">
+        <span class="pub-year">2025</span>
+        <div>
+          <div class="pub-title">Application of AI Communication Training Tools in Medical Undergraduate Education: Mixed Methods Feasibility Study Within a Primary Care Context</div>
+          <div class="pub-meta">Jacobs C, Johnson H, Tan N, Brownlie K, Joiner R, Thompson T</div>
+        </div>
+        <span class="pub-journal">JMIR Med Educ</span>
+      </li>
+      <li class="pub-item">
+        <span class="pub-year">2025</span>
+        <div>
+          <div class="pub-title">Examining Multimodal AI Resources in Medical Education: The Role of Immersion, Motivation, and Fidelity in AI Narrative Learning</div>
+          <div class="pub-meta">Jacobs C</div>
+        </div>
+        <span class="pub-journal">JMIR Med Educ</span>
+      </li>
+      <li class="pub-item">
+        <span class="pub-year">2025</span>
+        <div>
+          <div class="pub-title">Enhancing GP Consultation Skills Training: Educational Evaluation of a Conversational AI Innovation for Simulated Consultation Assessment Preparation</div>
+          <div class="pub-meta">Jacobs C, Hazra K, Singh A</div>
+        </div>
+        <span class="pub-journal">Educ Prim Care</span>
+      </li>
+      <li class="pub-item">
+        <span class="pub-year">2025</span>
+        <div>
+          <div class="pub-title">Beyond Traditional Simulation: An Exploratory Study on the Effectiveness and Acceptability of ChatGPT-4o Advanced Voice Mode for Communication Skills Practice</div>
+          <div class="pub-meta">Mukadam A, Suresh S, Jacobs C</div>
+        </div>
+        <span class="pub-journal">Cureus</span>
+      </li>
+      <li class="pub-item">
+        <span class="pub-year">2025</span>
+        <div>
+          <div class="pub-title">Impact of Digital Engagement on Weight Loss Outcomes in Obesity Management Among Individuals Using GLP-1 and Dual GLP-1/GIP Receptor Agonist Therapy</div>
+          <div class="pub-meta">Johnson H, Huang D, Liu V, Ammouri MA, Jacobs C, El-Osta A</div>
+        </div>
+        <span class="pub-journal">JMIR</span>
+      </li>
+      <li class="pub-item">
+        <span class="pub-year">2025</span>
+        <div>
+          <div class="pub-title">Current Treatment Options: Digital Mental Health Interventions in Psychiatry</div>
+          <div class="pub-meta">Marshall N, Loades M, Jacobs C, Biddle L, Lambert J</div>
+        </div>
+        <span class="pub-journal">Curr Treat Options Psych</span>
+      </li>
+      <li class="pub-item">
+        <span class="pub-year">2024</span>
+        <div>
+          <div class="pub-title">Human-Computer Interaction and Artificial Intelligence: Advancing Care Through Extended Mind Theory</div>
+          <div class="pub-meta">Jacobs C, Johnson H, Rennie T, Lambert J, Joiner R</div>
+        </div>
+        <span class="pub-journal">Cureus</span>
+      </li>
+      <li class="pub-item">
+        <span class="pub-year">2023</span>
+        <div>
+          <div class="pub-title">Cognitive Interviewing as a Method to Inform Questionnaire Design and Validity — ITEM for Healthcare Education</div>
+          <div class="pub-meta">Jacobs C, Wheeler J, Williams M, Joiner R</div>
+        </div>
+        <span class="pub-journal">Comput &amp; Educ</span>
+      </li>
+      <li class="pub-item">
+        <span class="pub-year">2023</span>
+        <div>
+          <div class="pub-title">Augmented Reality in Medical Education: A Mixed Methods Feasibility Study</div>
+          <div class="pub-meta">George O, Foster J, Xia Z, Jacobs C</div>
+        </div>
+        <span class="pub-journal">Cureus</span>
+      </li>
+    </ul>
+    <p style="text-align:center; margin-top: 2rem;">
+      <a href="https://researchportal.bath.ac.uk/en/persons/christopher-jacobs/publications/" target="_blank" style="color: var(--accent); font-size: 0.88rem; text-decoration: none; font-weight: 500; border-bottom: 1px solid var(--accent-light);">View all publications on Bath Research Portal →</a>
+    </p>
+  </div>
+</section>
+
+<footer>
+  <p>&copy; 2026 DrChris · Dr Chris Jacobs · University of Bath</p>
+</footer>
+
+<script>
+const BASE = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
+const ORCID = '0000-0002-3638-5454';
+
+// Titles already in the static list (lowercase, first 60 chars) — used to avoid duplicates
+const STATIC_TITLES = new Set();
+document.querySelectorAll('.pub-title').forEach(el => {
+  STATIC_TITLES.add(el.textContent.trim().toLowerCase().slice(0, 60));
+});
+
+function stripHtml(str) {
+  const d = document.createElement('div');
+  d.innerHTML = str;
+  return (d.textContent || d.innerText || '').trim();
+}
+
+function formatDate(dateStr) {
+  try {
+    const parts = dateStr.match(/(\d{4})\s+(\w+)\s*(\d*)/);
+    if (parts) {
+      const rebuilt = `${parts[2]} ${parts[3] || '1'}, ${parts[1]}`;
+      const d = new Date(rebuilt);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+    }
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+  } catch {}
+  return dateStr;
+}
+
+function parsePubDate(dateStr) {
+  try {
+    const parts = dateStr.match(/(\d{4})\s+(\w+)\s*(\d*)/);
+    if (parts) {
+      const d = new Date(`${parts[2]} ${parts[3] || '1'}, ${parts[1]}`);
+      if (!isNaN(d.getTime())) return d;
+    }
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) return d;
+  } catch {}
+  return new Date(0);
+}
+
+function isRecent(dateStr) {
+  const d = parsePubDate(dateStr);
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+  return d > threeMonthsAgo;
+}
+
+async function fetchMyPublications() {
+  const badge = document.getElementById('liveBadge');
+  const badgeText = document.getElementById('liveBadgeText');
+  const container = document.getElementById('liveContainer');
+
+  try {
+    // Search PubMed by ORCID
+    const searchUrl = `${BASE}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(ORCID + '[auid]')}&retmax=50&sort=date&retmode=json`;
+    const searchResp = await fetch(searchUrl);
+    if (!searchResp.ok) throw new Error(`HTTP ${searchResp.status}`);
+    const searchData = await searchResp.json();
+
+    const ids = searchData?.esearchresult?.idlist;
+    if (!ids || ids.length === 0) {
+      // No results by ORCID — try name search
+      const nameUrl = `${BASE}/esearch.fcgi?db=pubmed&term=${encodeURIComponent('"Jacobs C"[author] AND ("medical education" OR "immersive" OR "simulation" OR "virtual reality" OR "artificial intelligence")')}&retmax=30&sort=date&retmode=json`;
+      const nameResp = await fetch(nameUrl);
+      const nameData = await nameResp.json();
+      const nameIds = nameData?.esearchresult?.idlist;
+      if (!nameIds || nameIds.length === 0) throw new Error('No results found');
+      return await processPubMedIds(nameIds, container, badge, badgeText);
+    }
+
+    return await processPubMedIds(ids, container, badge, badgeText);
+
+  } catch (e) {
+    console.warn('PubMed fetch failed:', e);
+    badge.className = 'pub-live-badge error';
+    badgeText.textContent = 'Unavailable';
+    container.innerHTML = `<div class="pub-live-empty">
+      PubMed is temporarily unavailable. See the curated list below.
+    </div>`;
+  }
+}
+
+async function processPubMedIds(ids, container, badge, badgeText) {
+  // Get summaries
+  const summaryUrl = `${BASE}/esummary.fcgi?db=pubmed&id=${ids.join(',')}&retmode=json`;
+  const summaryResp = await fetch(summaryUrl);
+  if (!summaryResp.ok) throw new Error(`HTTP ${summaryResp.status}`);
+  const summaryData = await summaryResp.json();
+
+  let articles = [];
+  for (const id of ids) {
+    const item = summaryData?.result?.[id];
+    if (!item || !item.title) continue;
+
+    const title = stripHtml(item.title);
+
+    // Skip if already in static list
+    if (STATIC_TITLES.has(title.toLowerCase().slice(0, 60))) continue;
+
+    const authors = item.authors
+      ? item.authors.slice(0, 4).map(a => a.name).join(', ') + (item.authors.length > 4 ? ', et al.' : '')
+      : '';
+
+    articles.push({
+      title: title,
+      link: `https://pubmed.ncbi.nlm.nih.gov/${id}/`,
+      date: item.pubdate || item.sortpubdate || '',
+      sortDate: parsePubDate(item.pubdate || item.sortpubdate || ''),
+      authors: authors,
+      journal: item.fulljournalname || item.source || '',
+      isNew: isRecent(item.pubdate || item.sortpubdate || '')
+    });
+  }
+
+  articles.sort((a, b) => b.sortDate - a.sortDate);
+
+  if (articles.length === 0) {
+    badge.className = 'pub-live-badge';
+    badge.style.background = '#e8f4f8';
+    badge.style.color = '#1a7a9b';
+    badgeText.textContent = 'Up to date';
+    container.innerHTML = `<div class="pub-live-empty">
+      All PubMed-indexed publications are shown in the curated list below. Check back for new additions.
+    </div>`;
+    return;
+  }
+
+  badge.className = 'pub-live-badge ok';
+  badge.querySelector('.pulse').style.background = '#2d7a2d';
+  badgeText.textContent = `${articles.length} additional article${articles.length > 1 ? 's' : ''} found`;
+
+  container.innerHTML = '<div class="pub-live-grid">' + articles.map(a => `
+    <div class="pub-live-card">
+      ${a.isNew ? '<span class="plc-new">New</span>' : ''}
+      <div class="plc-title"><a href="${a.link}" target="_blank" rel="noopener">${a.title}</a></div>
+      ${a.authors ? `<div class="plc-authors">${a.authors}</div>` : ''}
+      ${a.journal ? `<div class="plc-journal">${a.journal}</div>` : ''}
+      ${a.date ? `<div class="plc-date">${formatDate(a.date)}</div>` : ''}
+    </div>
+  `).join('') + '</div>';
+}
+
+fetchMyPublications();
+</script>
+</body>
+</html>

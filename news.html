@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research News — DrChris</title>
+<link rel="stylesheet" href="styles.css">
+<style>body { padding-top: 70px; }</style>
+<style>
+.feed-filters {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  margin-bottom: 2.5rem; justify-content: center;
+}
+.feed-filters button {
+  background: var(--card-bg); border: 1px solid var(--rule);
+  border-radius: 100px; padding: 0.5rem 1.1rem;
+  font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+  font-weight: 500; color: var(--muted); cursor: pointer;
+  transition: all 0.2s;
+}
+.feed-filters button:hover { border-color: var(--accent); color: var(--ink); }
+.feed-filters button.active {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+
+.feed-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.2rem;
+}
+
+.feed-card {
+  background: var(--card-bg); border: 1px solid var(--rule);
+  border-radius: 14px; padding: 1.6rem;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  display: flex; flex-direction: column;
+}
+.feed-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  border-color: var(--accent);
+}
+
+.feed-card-source {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em;
+  font-weight: 600; margin-bottom: 0.8rem;
+  padding: 0.25rem 0.65rem; border-radius: 4px; width: fit-content;
+}
+.feed-card-source.jmir { background: #e8f4f8; color: #1a7a9b; }
+.feed-card-source.bmc { background: #e8f0e8; color: #2d7a2d; }
+.feed-card-source.pubmed-ai { background: #f0e8f4; color: #6b3fa0; }
+.feed-card-source.pubmed-sim { background: #fef3e2; color: #b8860b; }
+.feed-card-source.advances { background: #fce8e8; color: #a0443f; }
+
+.feed-card-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.05rem; line-height: 1.4;
+  margin-bottom: 0.6rem; flex-grow: 1;
+}
+.feed-card-title a {
+  color: var(--ink); text-decoration: none; transition: color 0.2s;
+}
+.feed-card-title a:hover { color: var(--accent); }
+
+.feed-card-authors {
+  font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem;
+}
+
+.feed-card-journal {
+  display: inline-block; font-size: 0.72rem; color: #666;
+  font-style: italic; margin-bottom: 0.4rem;
+}
+
+.feed-card-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; color: var(--muted);
+}
+
+.feed-loading {
+  text-align: center; padding: 4rem 2rem;
+  color: var(--muted); font-size: 0.9rem;
+}
+.feed-loading .spinner {
+  width: 32px; height: 32px; border: 3px solid var(--rule);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 0 auto 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.feed-error {
+  text-align: center; padding: 3rem 2rem;
+  background: #fef2f0; border: 1px solid #f5d5ce;
+  border-radius: 12px; color: #8a3a2a; font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+.feed-count {
+  text-align: center; font-size: 0.78rem;
+  color: var(--muted); margin-bottom: 1.5rem;
+}
+
+.feed-footer {
+  text-align: center; margin-top: 2.5rem;
+  font-size: 0.78rem; color: var(--muted); font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<nav id="navbar" class="nav-light">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-name">Dr<span>Chris</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="research.html">Research</a></li>
+      <li><a href="publications.html">Publications</a></li>
+      <li><a href="education.html">Education</a></li>
+      <li><a href="news.html" class="active">News</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-header">
+  <span class="section-number">07</span>
+  <h1>Research News</h1>
+  <p>Latest publications in AI, simulation, and medical education — sourced live from PubMed</p>
+</div>
+
+<section>
+  <div class="section-inner">
+    <div class="feed-filters" id="filters">
+      <button class="active" data-filter="all">All</button>
+      <button data-filter="jmir">JMIR Medical Education</button>
+      <button data-filter="bmc">BMC Medical Education</button>
+      <button data-filter="advances">Advances in Simulation</button>
+      <button data-filter="pubmed-ai">AI in Med Ed</button>
+      <button data-filter="pubmed-sim">Simulation &amp; VR</button>
+    </div>
+
+    <div class="feed-count" id="feedCount"></div>
+
+    <div id="feedContainer">
+      <div class="feed-loading">
+        <div class="spinner"></div>
+        Fetching latest articles from PubMed...
+      </div>
+    </div>
+
+    <div class="feed-footer">
+      All articles sourced live from PubMed (NCBI E-Utilities API).<br>
+      Content refreshes each time you visit this page.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>&copy; 2026 DrChris · Dr Chris Jacobs · University of Bath</p>
+</footer>
+
+<script>
+// All feeds use PubMed E-Utilities — no CORS proxy needed
+const FEEDS = [
+  {
+    id: 'jmir',
+    name: 'JMIR Medical Education',
+    query: '"JMIR Med Educ"[journal]',
+    style: 'jmir',
+    max: 12
+  },
+  {
+    id: 'bmc',
+    name: 'BMC Medical Education',
+    query: '"BMC Med Educ"[journal] AND ("technology" OR "simulation" OR "artificial intelligence" OR "virtual" OR "digital")',
+    style: 'bmc',
+    max: 12
+  },
+  {
+    id: 'advances',
+    name: 'Advances in Simulation',
+    query: '"Adv Simul (Lond)"[journal]',
+    style: 'advances',
+    max: 10
+  },
+  {
+    id: 'pubmed-ai',
+    name: 'AI in Medical Education',
+    query: '("artificial intelligence" OR "large language model" OR "ChatGPT" OR "generative AI") AND "medical education"',
+    style: 'pubmed-ai',
+    max: 12
+  },
+  {
+    id: 'pubmed-sim',
+    name: 'Simulation & VR',
+    query: '("virtual patient" OR "simulated patient" OR "virtual reality" OR "immersive") AND "medical education"',
+    style: 'pubmed-sim',
+    max: 12
+  }
+];
+
+const BASE = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
+let allArticles = [];
+
+function stripHtml(str) {
+  const d = document.createElement('div');
+  d.innerHTML = str;
+  return (d.textContent || d.innerText || '').trim();
+}
+
+function formatDate(dateStr) {
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) {
+      // Try parsing "2025 Jan 15" format
+      const parts = dateStr.match(/(\d{4})\s+(\w+)\s*(\d*)/);
+      if (parts) {
+        const rebuilt = `${parts[2]} ${parts[3] || '1'}, ${parts[1]}`;
+        const d2 = new Date(rebuilt);
+        if (!isNaN(d2.getTime())) {
+          return d2.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+      }
+      return dateStr;
+    }
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch { return dateStr; }
+}
+
+function parsePubDate(dateStr) {
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) return d;
+    const parts = dateStr.match(/(\d{4})\s+(\w+)\s*(\d*)/);
+    if (parts) {
+      const rebuilt = `${parts[2]} ${parts[3] || '1'}, ${parts[1]}`;
+      const d2 = new Date(rebuilt);
+      if (!isNaN(d2.getTime())) return d2;
+    }
+  } catch {}
+  return new Date(0);
+}
+
+async function fetchFeed(feed) {
+  try {
+    // Step 1: Search
+    const searchUrl = `${BASE}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(feed.query)}&retmax=${feed.max}&sort=date&retmode=json&datetype=pdat&mindate=2024&maxdate=2026`;
+    const searchResp = await fetch(searchUrl);
+    if (!searchResp.ok) throw new Error(`Search HTTP ${searchResp.status}`);
+    const searchData = await searchResp.json();
+
+    const ids = searchData?.esearchresult?.idlist;
+    if (!ids || ids.length === 0) return [];
+
+    // Step 2: Get summaries
+    const summaryUrl = `${BASE}/esummary.fcgi?db=pubmed&id=${ids.join(',')}&retmode=json`;
+    const summaryResp = await fetch(summaryUrl);
+    if (!summaryResp.ok) throw new Error(`Summary HTTP ${summaryResp.status}`);
+    const summaryData = await summaryResp.json();
+
+    const articles = [];
+    for (const id of ids) {
+      const item = summaryData?.result?.[id];
+      if (!item || !item.title) continue;
+
+      const authors = item.authors
+        ? item.authors.slice(0, 4).map(a => a.name).join(', ') + (item.authors.length > 4 ? ', et al.' : '')
+        : '';
+
+      const journal = item.fulljournalname || item.source || '';
+
+      articles.push({
+        title: stripHtml(item.title),
+        link: `https://pubmed.ncbi.nlm.nih.gov/${id}/`,
+        date: item.pubdate || item.sortpubdate || '',
+        sortDate: parsePubDate(item.pubdate || item.sortpubdate || ''),
+        authors: authors,
+        journal: journal,
+        source: feed.name,
+        sourceId: feed.id,
+        style: feed.style
+      });
+    }
+    return articles;
+  } catch (e) {
+    console.warn(`Feed ${feed.id} failed:`, e);
+    return [];
+  }
+}
+
+function renderArticles(articles) {
+  const container = document.getElementById('feedContainer');
+  const countEl = document.getElementById('feedCount');
+
+  if (articles.length === 0) {
+    container.innerHTML = `<div class="feed-error">
+      No articles could be loaded.<br>
+      This may be a temporary issue with PubMed. Please try refreshing the page.
+    </div>`;
+    countEl.textContent = '';
+    return;
+  }
+
+  countEl.textContent = `Showing ${articles.length} recent articles`;
+
+  container.innerHTML = '<div class="feed-grid">' + articles.map(a => `
+    <div class="feed-card" data-source="${a.sourceId}">
+      <span class="feed-card-source ${a.style}">${a.source}</span>
+      <div class="feed-card-title">
+        <a href="${a.link}" target="_blank" rel="noopener">${a.title}</a>
+      </div>
+      ${a.authors ? `<div class="feed-card-authors">${a.authors}</div>` : ''}
+      ${a.journal ? `<div class="feed-card-journal">${a.journal}</div>` : ''}
+      ${a.date ? `<div class="feed-card-date">${formatDate(a.date)}</div>` : ''}
+    </div>
+  `).join('') + '</div>';
+}
+
+function filterArticles(sourceId) {
+  if (sourceId === 'all') {
+    renderArticles(allArticles);
+  } else {
+    renderArticles(allArticles.filter(a => a.sourceId === sourceId));
+  }
+}
+
+// Filter buttons
+document.getElementById('filters').addEventListener('click', (e) => {
+  if (e.target.tagName !== 'BUTTON') return;
+  document.querySelectorAll('.feed-filters button').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  filterArticles(e.target.dataset.filter);
+});
+
+// Small delay between requests to be polite to NCBI
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function init() {
+  const results = [];
+  for (const feed of FEEDS) {
+    const articles = await fetchFeed(feed);
+    results.push(articles);
+    await delay(350); // NCBI asks for max 3 requests/second
+  }
+
+  allArticles = results
+    .flat()
+    .filter(a => a.title)
+    .sort((a, b) => b.sortDate - a.sortDate);
+
+  // Deduplicate by title
+  const seen = new Set();
+  allArticles = allArticles.filter(a => {
+    const key = a.title.toLowerCase().slice(0, 80);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  renderArticles(allArticles);
+}
+
+init();
+</script>
+</body>
+</html>
